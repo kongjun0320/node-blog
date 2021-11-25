@@ -34,15 +34,16 @@ const serverHandle = (req, res) => {
   req.path = url.split('?')[0]
   req.query = querystring.parse(url.split('?')[1])
 
-  getPostData(req).then((postData) => {
+  getPostData(req).then(async (postData) => {
     req.body = postData
 
-    const blogData = handleBlogRouter(req, res)
+    const blogData = await handleBlogRouter(req, res)
+
     if (blogData) {
       res.end(JSON.stringify(blogData))
       return
     }
-    const userData = handleUserRouter(req, res)
+    const userData = await handleUserRouter(req, res)
     if (userData) {
       res.end(JSON.stringify(userData))
       return
