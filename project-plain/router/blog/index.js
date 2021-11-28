@@ -7,6 +7,12 @@ const {
 } = require('../../controller/blog')
 const { SuccessModel, ErrorModel } = require('../../model/resModel')
 
+const loginCheck = (req) => {
+  if (!req.session.username) {
+    return Promise.resolve(new ErrorModel('未登录'))
+  }
+}
+
 const handleBlogRouter = async (req, res) => {
   const method = req.method
   const id = req.query.id
@@ -27,11 +33,21 @@ const handleBlogRouter = async (req, res) => {
   }
 
   if (method === 'POST' && req.path === '/api/blog/new') {
-    const data = await newBlog({ ...body, author: 'mike' })
+    const loginCheckResult = loginCheck()
+    if (loginCheckResult) {
+      return loginCheckResult
+    }
+
+    const data = await newBlog({ ...body, author: req.session.username })
     return new SuccessModel(data)
   }
 
   if (method === 'POST' && req.path === '/api/blog/update') {
+    const loginCheckResult = loginCheck()
+    if (loginCheckResult) {
+      return loginCheckResult
+    }
+
     const result = await updateBlog(id, body)
     if (result) {
       return new SuccessModel()
@@ -41,8 +57,12 @@ const handleBlogRouter = async (req, res) => {
   }
 
   if (method === 'POST' && req.path === '/api/blog/del') {
-    const author = 'mike'
-    const result = await delBlog(id, author)
+    const loginCheckResult = loginCheck()
+    if (loginCheckResult) {
+      return loginCheckResult
+    }
+
+    const result = await delBlog(id, req.session.username)
 
     if (result) {
       return new SuccessModel()

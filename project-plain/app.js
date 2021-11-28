@@ -27,22 +27,54 @@ const getPostData = (req) => {
   })
 }
 
+const SESSION_DATA = {}
+
 const serverHandle = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
 
   const url = req.url
   req.path = url.split('?')[0]
+  // query
   req.query = querystring.parse(url.split('?')[1])
+  // cookie
+  req.cookie = {}
+  const cookieStr = req.headers.cookie
+  if (cookieStr) {
+    cookieStr.split(';').forEach((c) => {
+      const [key, value] = c.split('=')
+      req.cookie[key.trim()] = value
+    })
+  }
 
+  let needSetCookie = false
+  // session
+  let userId = req.cookie.userId
+  if (userId) {
+    needSetCookie = false
+    if (!SESSION_DATA[userId]) {
+      SESSION_DATA[userId] = {}
+    }
+    req.session = SESSION_DATA[userId]
+  } else {
+    needSetCookie = true
+    userId = `${Date.now()}_${Math.random()}`
+    SESSION_DATA[userId] = {}
+    req.session = SESSION_DATA[userId]
+  }
+  // body
   getPostData(req).then(async (postData) => {
     req.body = postData
 
-    const blogData = await handleBlogRouter(req, res)
+    if (needSetCookie) {
+      res.setHeader('Set-Cookie', `userId=${userId}; path=/; httpOnly`)
+    }
 
+    const blogData = await handleBlogRouter(req, res)
     if (blogData) {
       res.end(JSON.stringify(blogData))
       return
     }
+
     const userData = await handleUserRouter(req, res)
     if (userData) {
       res.end(JSON.stringify(userData))
