@@ -3,8 +3,8 @@ const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
+const session = require('express-session')
 
-const indexRouter = require('./routes/index')
 const userRouter = require('./routes/user')
 const blogRouter = require('./routes/blog')
 
@@ -16,7 +16,19 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/', indexRouter)
+app.use(
+  session({
+    secret: 'aicherish0320',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      path: '/',
+      httpOnly: true,
+      maxAge: 2 * 60 * 60 * 1000
+    }
+  })
+)
+
 app.use('/api/user', userRouter)
 app.use('/api/blog', blogRouter)
 
@@ -27,7 +39,8 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  const { message, stack } = req.app.get('env') === 'development' ? err : {}
+  const { message, stack } =
+    req.app.get('NODE_ENV') === 'development' ? err : {}
 
   res.status(err.status || 500)
   res.send({ message, stack })
