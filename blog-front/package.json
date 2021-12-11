@@ -7,10 +7,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.2.23"
+    "axios": "^0.24.0",
+    "dayjs": "^1.10.7",
+    "element-plus": "^1.2.0-beta.5",
+    "normalize.css": "^8.0.1",
+    "vue": "^3.2.23",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.10.2",
+    "sass": "^1.44.0",
     "vite": "^2.7.0"
   }
 }

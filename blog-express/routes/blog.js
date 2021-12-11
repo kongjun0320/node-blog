@@ -13,7 +13,7 @@ const loginCheck = require('../middleware/loginCheck')
 const { SuccessModel, ErrorModel } = require('../model/resModel')
 
 router.get('/list', async (req, res, next) => {
-  const author = req.query.author || ''
+  let author = req.query.author || ''
   const keyword = req.query.keyword || ''
 
   if (req.query.isAdmin) {
@@ -22,7 +22,7 @@ router.get('/list', async (req, res, next) => {
       return
     }
 
-    author = req.session.author
+    author = req.session.username
   }
 
   const result = await getList(author, keyword)
@@ -37,7 +37,7 @@ router.get('/detail', async (req, res, next) => {
 
 router.post('/new', loginCheck, async (req, res, next) => {
   req.body.author = req.session.username
-  const result = await new newBlog(req.body)
+  const result = await newBlog(req.body)
   res.json(new SuccessModel(result))
 })
 
@@ -52,7 +52,7 @@ router.post('/update', loginCheck, async (req, res, next) => {
 
 router.post('/del', loginCheck, async (req, res, next) => {
   const author = req.session.username
-  const result = await delBlog(req.query.id, author)
+  const result = await delBlog(req.body.id, author)
   if (result) {
     res.json(new SuccessModel())
   } else {
